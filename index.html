@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Admisión - Camila Lombeida (Noveno EGB)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+    
+    body {
+        font-family: 'Outfit', sans-serif;
+        background: #fdf2f8; /* Fondo rosado muy suave */
+        color: #1e293b;
+        overflow-x: hidden;
+    }
+
+    .card-pro {
+        background: rgba(255, 255, 255, 1);
+        color: #1e293b;
+        border-radius: 2rem;
+        box-shadow: 0 15px 45px -10px rgba(190, 24, 93, 0.15);
+    }
+
+    .option-btn {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid #fce7f3;
+        text-align: left;
+        width: 100%;
+        padding: 1.1rem 1.4rem;
+        border-radius: 1.2rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.6rem;
+        background: white;
+    }
+
+    .option-btn:hover:not(:disabled) {
+        border-color: #db2777;
+        background: #fdf2f8;
+        transform: translateX(6px);
+    }
+
+    .correct { background: #f0fdf4 !important; border-color: #22c55e !important; color: #166534 !important; font-weight: bold; }
+    .wrong { background: #fef2f2 !important; border-color: #ef4444 !important; color: #991b1b !important; }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-8px); }
+        40% { transform: translateX(8px); }
+        60% { transform: translateX(-8px); }
+        80% { transform: translateX(8px); }
+    }
+    .shake-anim { animation: shake 0.4s ease-in-out; }
+
+    /* Custom color for Camila's theme */
+    .bg-camila { background-color: #db2777; }
+    .text-camila { color: #db2777; }
+    .border-camila { border-color: #db2777; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-6 md:py-10 px-4">
+
+<div class="w-full max-w-4xl">
+    <!-- Encabezado Institucional Femenino -->
+    <header class="bg-white p-6 rounded-[2rem] shadow-xl mb-6 border-b-4 border-pink-500 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+            <div class="bg-pink-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg">DB</div>
+            <div>
+                <h1 class="text-slate-900 font-extrabold text-base md:text-lg uppercase tracking-tighter">Colegio Técnico Don Bosco</h1>
+                <p class="text-pink-600 font-bold text-[9px] uppercase tracking-widest italic leading-none mb-1">Aspirantes Noveno EGB 2026</p>
+                <p class="text-slate-400 font-medium text-[10px]">Estudiante: <span class="text-pink-700 font-black tracking-tight">Camila Lombeida</span></p>
+            </div>
+        </div>
+        <div id="quiz-header-info" class="hidden flex gap-5">
+            <div class="text-right">
+                <p class="text-[9px] uppercase font-black text-slate-400 tracking-widest">Aciertos</p>
+                <p id="current-accuracy" class="font-mono font-black text-pink-600 text-lg">0%</p>
+            </div>
+            <div class="w-[1px] bg-slate-100 h-8"></div>
+            <div class="text-right">
+                <p class="text-[9px] uppercase font-black text-slate-400 tracking-widest">Reloj</p>
+                <p id="timer" class="font-mono font-black text-slate-700 text-lg">00:00</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Pantalla de Selección -->
+    <div id="selection-screen" class="card-pro p-8 md:p-14 text-center animate-in fade-in duration-700">
+        <div class="mb-6 inline-block bg-pink-50 p-5 rounded-3xl text-pink-500 text-5xl shadow-inner">🌸</div>
+        <h2 class="text-3xl font-black text-slate-900 mb-3 tracking-tight">¡Bienvenida, Camila!</h2>
+        <p class="text-slate-500 mb-10 max-w-lg mx-auto font-medium text-sm leading-relaxed">
+            Tu ingreso al Noveno de Básica del Don Bosco comienza aquí. Demuestra tu disciplina y talento en cada bloque.
+        </p>
+        
+        <div class="grid md:grid-cols-2 gap-6 mb-10 text-left">
+            <button onclick="startQuiz('math')" class="group p-8 border-2 border-slate-50 rounded-[2.5rem] hover:border-pink-500 hover:bg-pink-50 transition-all relative overflow-hidden bg-white shadow-sm">
+                <div class="text-4xl mb-4">📐</div>
+                <h3 class="text-xl font-black text-slate-800">Lógico Matemático</h3>
+                <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">Inducción de reglas, validación algorítmica y análisis de espacios muestrales.</p>
+                <div class="absolute -right-4 -bottom-4 opacity-5 text-8xl font-black group-hover:scale-110 transition-transform">∞</div>
+            </button>
+
+            <button onclick="startQuiz('verbal')" class="group p-8 border-2 border-slate-50 rounded-[2.5rem] hover:border-indigo-500 hover:bg-indigo-50 transition-all relative overflow-hidden bg-white shadow-sm">
+                <div class="text-4xl mb-4">✍️</div>
+                <h3 class="text-xl font-black text-slate-800">Lógico Verbal</h3>
+                <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">Comprensión intermedia, relaciones causa-efecto y ortografía normativa.</p>
+                <div class="absolute -right-4 -bottom-4 opacity-5 text-8xl font-black group-hover:scale-110 transition-transform">¶</div>
+            </button>
+        </div>
+
+        <p class="text-[10px] text-slate-400 font-bold uppercase italic tracking-widest">"La educación es cuestión del corazón" - Don Bosco</p>
+    </div>
+
+    <!-- Pantalla de Quiz -->
+    <div id="quiz-screen" class="hidden">
+        <div class="card-pro overflow-hidden">
+            <div class="h-2 bg-slate-50 w-full">
+                <div id="progress-bar" class="h-full bg-pink-500 transition-all duration-700 shadow-[0_0_10px_rgba(219,39,119,0.3)]" style="width: 0%"></div>
+            </div>
+            
+            <div class="p-6 md:p-10">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div class="flex flex-col gap-1">
+                        <span id="topic-label" class="bg-pink-100 text-pink-600 text-[9px] font-black px-3 py-1 rounded-md uppercase tracking-widest w-fit">MODALIDAD</span>
+                        <span id="subtheme-label" class="text-indigo-700 font-black text-xs uppercase tracking-tight">SUBTEMA: CARGANDO...</span>
+                    </div>
+                    <span id="question-index" class="text-slate-400 font-black text-xs uppercase italic">Pregunta 01 / 50</span>
+                </div>
+
+                <div id="question-content" class="min-h-[320px]">
+                    <h2 id="question-text" class="text-xl md:text-2xl font-bold text-slate-800 mb-8 leading-snug"></h2>
+                    <div id="options-container" class="grid grid-cols-1 gap-1"></div>
+                </div>
+
+                <!-- Feedback Panel -->
+                <div id="feedback-panel" class="hidden mt-6 p-6 rounded-3xl border-2 flex items-start gap-4 animate-in fade-in shadow-sm">
+                    <div id="feedback-icon" class="text-4xl"></div>
+                    <div>
+                        <p id="feedback-title" class="font-black text-xs uppercase mb-1 tracking-tight"></p>
+                        <p id="feedback-explanation" class="text-xs md:text-sm leading-relaxed font-medium italic"></p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-center mt-8 pt-8 border-t border-slate-50 gap-4">
+                    <button onclick="exitQuiz()" class="text-slate-300 hover:text-red-500 font-black text-[10px] uppercase tracking-widest transition-all order-2 md:order-1">Salir al Menú Principal</button>
+                    <button id="next-btn" onclick="nextQuestion()" class="hidden w-full md:w-auto bg-pink-600 text-white px-12 py-4 rounded-2xl font-black text-sm shadow-xl hover:bg-pink-700 transition-all order-1 md:order-2">SIGUIENTE RETO →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Resultados -->
+    <div id="result-screen" class="hidden card-pro p-10 md:p-16 text-center border-t-8 border-pink-500">
+        <div id="result-score-circle" class="w-36 h-36 rounded-full border-[12px] flex flex-col items-center justify-center mx-auto mb-8 shadow-2xl bg-white">
+            <span id="final-percent" class="text-4xl font-black">0%</span>
+        </div>
+        <h2 class="text-3xl font-black text-slate-900 mb-3 uppercase tracking-tighter">Informe: Camila Lombeida</h2>
+        <p id="result-message" class="text-slate-500 mb-10 font-medium px-4 text-sm"></p>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                <p class="text-[9px] text-slate-400 font-black uppercase mb-1">Logrados</p>
+                <p id="res-correct" class="text-2xl font-black text-green-600">0</p>
+            </div>
+            <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                <p class="text-[9px] text-slate-400 font-black uppercase mb-1">Por Mejorar</p>
+                <p id="res-wrong" class="text-2xl font-black text-red-600">0</p>
+            </div>
+            <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                <p class="text-[9px] text-slate-400 font-black uppercase mb-1">Tiempo</p>
+                <p id="res-time" class="text-xl font-black text-pink-600">00:00</p>
+            </div>
+            <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                <p class="text-[9px] text-slate-400 font-black uppercase mb-1">Nota Final</p>
+                <p id="res-nota" class="text-xl font-black text-slate-800">0.0</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-4">
+            <button onclick="location.reload()" class="flex-1 bg-pink-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-pink-700 transition-all shadow-xl">NUEVA PRÁCTICA</button>
+            <button onclick="window.print()" class="px-8 bg-slate-100 text-slate-500 py-5 rounded-2xl font-black text-sm hover:bg-slate-200 transition-all">DESCARGAR REPORTE</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// BANCO DE PREGUNTAS CON SUBTEMAS ESPECÍFICOS PARA NOVENO EGB
+const mathPool = [
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Inducción de Reglas y Generalización", 
+        q: "¿Cuál es el término número 12 de la secuencia: 3, 7, 11, 15...?", 
+        o: ["47", "43", "48", "51"], 
+        c: 0, 
+        e: "Regla: a + (n-1)d. 3 + (11 * 4) = 3 + 44 = 47." 
+    },
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Validación de Procesos Algorítmicos", 
+        q: "Un estudiante resolvió: 10 - 2 * 3 + 5 = 29. ¿Cuál es el error de jerarquía?", 
+        o: ["Sumó antes de multiplicar", "Restó 10-2 antes de multiplicar por 3", "Multiplicó bien pero sumó mal", "No hay error"], 
+        c: 1, 
+        e: "Debió multiplicar primero (2*3=6). 10-6+5 = 9. El error fue hacer 8*3+5." 
+    },
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Modelado de Restricciones", 
+        q: "Si el presupuesto máximo es $150 y cada kit cuesta $12 más $30 de envío fijo. ¿Cuántos kits máximo puede comprar?", 
+        o: ["12 kits", "10 kits", "9 kits", "11 kits"], 
+        c: 1, 
+        e: "12x + 30 <= 150 -> 12x <= 120 -> x <= 10." 
+    },
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Análisis de Correlación Inversa y Directa", 
+        q: "Al triplicar la velocidad de llenado de un tanque, el tiempo de espera:", 
+        o: ["Se triplica", "Se mantiene igual", "Se reduce a la tercera parte", "Aumenta 9 veces"], 
+        c: 2, 
+        e: "A mayor velocidad, menor tiempo. Es una correlación inversa (1/3)." 
+    },
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Descomposición de Razones Compuestas", 
+        q: "Se reparte $600 entre dos personas en razón 2:3. ¿Cuánto recibe la persona con la parte mayor?", 
+        o: ["$240", "$300", "$360", "$400"], 
+        c: 2, 
+        e: "Total partes: 5. $600/5 = $120 por parte. La mayor recibe 3 * 120 = $360." 
+    },
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Deducción de Invariantes y Propiedades", 
+        q: "En dos rectas paralelas cortadas por una transversal, si un ángulo interno mide 70°, ¿cuánto mide su alterno interno?", 
+        o: ["110°", "70°", "180°", "90°"], 
+        c: 1, 
+        e: "Propiedad: los ángulos alternos internos entre paralelas son iguales." 
+    },
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Análisis de Variación de Parámetros", 
+        q: "Si duplicamos el radio de un círculo, ¿qué sucede con su área?", 
+        o: ["Se duplica", "Aumenta 4 veces", "Se mantiene", "Aumenta 8 veces"], 
+        c: 1, 
+        e: "El área depende del radio al cuadrado (r²). 2² = 4." 
+    },
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Jerarquización de Atributos", 
+        q: "¿Cuál de estos cuerpos geométricos NO pertenece al grupo de los poliedros regulares?", 
+        o: ["Cubo", "Tetraedro", "Cilindro", "Dodecaedro"], 
+        c: 2, 
+        e: "El cilindro es un cuerpo redondo, no un poliedro de caras planas regulares." 
+    },
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Inferencia y Predicción Estadística", 
+        q: "En un conjunto de datos: 10, 10, 10, 50. ¿Qué medida de tendencia central se ve más afectada por el valor 50?", 
+        o: ["La moda", "La mediana", "La media aritmética", "Ninguna"], 
+        c: 2, 
+        e: "La media es muy sensible a valores atípicos (extremos)." 
+    },
+    { 
+        t: "RAZONAMIENTO MATEMÁTICO", 
+        st: "Interpretación Crítica de Gráficos", 
+        q: "Si un gráfico muestra ventas de $1000 en enero y $1100 en febrero, pero el eje Y comienza en $900. La percepción visual es:", 
+        o: ["Un crecimiento normal", "Un crecimiento exagerado", "Un decrecimiento", "Información exacta"], 
+        c: 1, 
+        e: "Al truncar el eje Y, las diferencias pequeñas parecen gigantescas (engaño visual)." 
+    }
+];
+
+const verbalPool = [
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Ideas implícitas e inferencias", 
+        q: "Texto: 'María cerró su libro con fuerza, suspiró y miró la lluvia tras la ventana'. Se infiere que:", 
+        o: ["María está feliz", "Está frustrada o cansada de estudiar", "Quiere salir a jugar", "El libro es de terror"], 
+        c: 1, 
+        e: "Cerrar con fuerza y suspirar son señales de fatiga o frustración emocional." 
+    },
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Funciones sintácticas básicas", 
+        q: "Identifique el Sujeto en: 'Durante las vacaciones, viajaron a Quito los primos de Camila'.", 
+        o: ["Durante las vacaciones", "viajaron a Quito", "los primos de Camila", "Camila"], 
+        c: 2, 
+        e: "¿Quiénes realizaron la acción de viajar? Los primos de Camila." 
+    },
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Relaciones causa-efecto", 
+        q: "Causa: 'No se respetó la jerarquía de operaciones'. Efecto lógico:", 
+        o: ["El ejercicio es más corto", "El resultado numérico es incorrecto", "La calculadora fallará", "No hay efecto"], 
+        c: 1, 
+        e: "Ignorar el orden lógico matemático lleva inevitablemente a un error en el valor final." 
+    },
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Tiempos verbales", 
+        q: "¿En qué tiempo está: 'Camila habrá terminado su tarea mañana'?", 
+        o: ["Futuro Simple", "Futuro Compuesto", "Condicional", "Presente"], 
+        c: 1, 
+        e: "Auxiliar 'habrá' + participio = Futuro Perfecto o Compuesto." 
+    },
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Conectores de contraste", 
+        q: "Complete: 'Estudió mucho para el examen, _______ no obtuvo la nota deseada'.", 
+        o: ["porque", "por eso", "sin embargo", "además"], 
+        c: 2, 
+        e: "Se requiere un conector que indique una oposición entre el esfuerzo y el resultado." 
+    },
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Cohesión y coherencia textual", 
+        q: "Uso de 'ella' para referirse a 'Camila' en un texto evita la:", 
+        o: ["Cacofonía", "Repetición innecesaria", "Falta de tildes", "Puntuación"], 
+        c: 1, 
+        e: "Los pronombres ayudan a mantener la cohesión sin repetir el nombre propio constantemente." 
+    },
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Léxico en contexto", 
+        q: "Significado de 'INCENTIVAR' en un entorno escolar:", 
+        o: ["Castigar", "Motivar / Estimular", "Ignorar", "Evaluar"], 
+        c: 1, 
+        e: "Incentivar implica dar razones o premios para fomentar una conducta positiva." 
+    },
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Ortografía normativa básica", 
+        q: "¿Cuál palabra está correctamente escrita?", 
+        o: ["Escaces", "Escasez", "Escacez", "Escases"], 
+        c: 1, 
+        e: "Escasez se escribe con 's' inicial y 'z' final." 
+    },
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Selección de conclusiones coherentes", 
+        q: "Si estudias, apruebas. No aprobaste. Conclusión:", 
+        o: ["Estudiaste poco", "No estudiaste", "El examen fue difícil", "Aprobarás luego"], 
+        c: 1, 
+        e: "Deducción lógica: si la consecuencia no ocurrió, la condición previa tampoco." 
+    },
+    { 
+        t: "RAZONAMIENTO VERBAL", 
+        st: "Identificación de ideas secundarias", 
+        q: "En un texto sobre la contaminación, una idea secundaria sería:", 
+        o: ["La contaminación daña el planeta", "Existen varios tipos de reciclaje", "El color de los tachos de basura", "Debemos cuidar el agua"], 
+        c: 2, 
+        e: "El color de los tachos es un detalle específico (secundario) frente al tema global." 
+    }
+];
+
+// Lógica de Sistema
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let timerInterval;
+let seconds = 0;
+let canAnswer = true;
+let audioCtx = null;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+function playSound(type) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    
+    if (type === 'win') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
+        osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.1); // C6
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+    } else {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+    }
+    osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+}
+
+function startQuiz(type) {
+    initAudio();
+    document.getElementById('selection-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+    document.getElementById('quiz-header-info').classList.remove('hidden');
+    
+    let base = type === 'math' ? mathPool : verbalPool;
+    let pool = [...base];
+    while(pool.length < 50) pool = pool.concat(base);
+    currentQuestions = pool.sort(() => Math.random() - 0.5).slice(0, 50);
+    
+    currentIndex = 0; score = 0; seconds = 0;
+    startTimer();
+    showQuestion();
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        seconds++;
+        const m = Math.floor(seconds/60).toString().padStart(2,'0');
+        const s = (seconds%60).toString().padStart(2,'0');
+        document.getElementById('timer').innerText = `${m}:${s}`;
+    }, 1000);
+}
+
+function showQuestion() {
+    canAnswer = true;
+    const q = currentQuestions[currentIndex];
+    const container = document.getElementById('options-container');
+    
+    document.getElementById('topic-label').innerText = q.t;
+    document.getElementById('subtheme-label').innerText = `SUBTEMA: ${q.st}`;
+    document.getElementById('question-index').innerText = `Reto ${(currentIndex + 1).toString().padStart(2, '0')} / 50`;
+    document.getElementById('question-text').innerText = q.q;
+    document.getElementById('feedback-panel').classList.add('hidden');
+    document.getElementById('next-btn').classList.add('hidden');
+    document.getElementById('progress-bar').style.width = `${(currentIndex / 50) * 100}%`;
+    
+    container.innerHTML = '';
+    q.o.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = "option-btn animate-in fade-in slide-in-from-left";
+        btn.innerHTML = `<span class="bg-pink-100 w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black text-pink-700 border border-pink-200">${String.fromCharCode(65+i)}</span> ${opt}`;
+        btn.onclick = () => validate(i, btn);
+        container.appendChild(btn);
+    });
+}
+
+function validate(idx, btn) {
+    if (!canAnswer) return;
+    canAnswer = false;
+    const q = currentQuestions[currentIndex];
+    const feedback = document.getElementById('feedback-panel');
+    const btns = document.querySelectorAll('.option-btn');
+
+    if (idx === q.c) {
+        score++;
+        btn.classList.add('correct');
+        playSound('win');
+        setFeedback("Camila, ¡Análisis Perfecto!", q.e, "✨", "border-green-200 bg-green-50 text-green-800");
+    } else {
+        btn.classList.add('wrong');
+        btns[q.c].classList.add('correct');
+        document.getElementById('quiz-screen').classList.add('shake-anim');
+        setTimeout(() => document.getElementById('quiz-screen').classList.remove('shake-anim'), 400);
+        playSound('lose');
+        setFeedback("Sigue Estudiando", q.e, "💡", "border-red-200 bg-red-50 text-red-800");
+    }
+
+    document.getElementById('current-accuracy').innerText = Math.round((score / (currentIndex + 1)) * 100) + "%";
+    document.getElementById('next-btn').classList.remove('hidden');
+}
+
+function setFeedback(title, expl, icon, classes) {
+    const f = document.getElementById('feedback-panel');
+    f.className = `mt-6 p-6 rounded-3xl border-2 flex items-start gap-4 animate-in fade-in ${classes}`;
+    document.getElementById('feedback-icon').innerText = icon;
+    document.getElementById('feedback-title').innerText = title;
+    document.getElementById('feedback-explanation').innerText = expl;
+    f.classList.remove('hidden');
+}
+
+function nextQuestion() {
+    currentIndex++;
+    if (currentIndex < 50) {
+        showQuestion();
+    } else {
+        finish();
+    }
+}
+
+function finish() {
+    clearInterval(timerInterval);
+    document.getElementById('quiz-screen').classList.add('hidden');
+    document.getElementById('result-screen').classList.remove('hidden');
+    
+    const porc = Math.round((score / 50) * 100);
+    document.getElementById('final-percent').innerText = porc + "%";
+    document.getElementById('res-correct').innerText = score;
+    document.getElementById('res-wrong').innerText = 50 - score;
+    document.getElementById('res-time').innerText = document.getElementById('timer').innerText;
+    document.getElementById('res-nota').innerText = (score / 5).toFixed(1);
+
+    let msg = ""; let color = "";
+    if (porc >= 90) { msg = "¡Excelente Camila! Demuestras que el Don Bosco es tu lugar."; color = "#db2777"; }
+    else if (porc >= 70) { msg = "Buen desempeño. Refuerza los subtemas donde fallaste para asegurar tu cupo."; color = "#4f46e5"; }
+    else { msg = "Necesitas practicar más. La disciplina es la clave del éxito."; color = "#ef4444"; }
+
+    document.getElementById('result-message').innerText = msg;
+    document.getElementById('result-score-circle').style.borderColor = color;
+    document.getElementById('final-percent').style.color = color;
+}
+
+function exitQuiz() {
+    if (confirm("¿Camila, vas a regresar al menú? Perderás el progreso de este bloque.")) {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('quiz-header-info').classList.add('hidden');
+        document.getElementById('selection-screen').classList.remove('hidden');
+        clearInterval(timerInterval);
+    }
+}
+</script>
+
+<style>
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slide-in-from-left { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .animate-in { animation-fill-mode: both; }
+    .fade-in { animation-name: fade-in; }
+    .slide-in-from-left { animation-name: slide-in-from-left; }
+</style>
+
+</body>
+</html>
